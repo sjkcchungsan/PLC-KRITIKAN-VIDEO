@@ -30,7 +30,6 @@
             .page-break { page-break-before: always; }
         }
         
-        /* High Contrast for Inputs - Black text on White background */
         input, textarea {
             width: 100%;
             padding: 12px;
@@ -57,7 +56,6 @@
             font-size: 0.95rem;
         }
 
-        /* Conclusion Box - Ultra High Contrast for Manual Editing */
         #aiStrategicSummary {
             border: 3px solid #000000 !important;
             font-weight: 700;
@@ -67,7 +65,6 @@
             font-size: 1.1rem;
         }
 
-        /* Image Display Grid */
         .img-preview {
             width: 100%;
             aspect-ratio: 4/3;
@@ -219,13 +216,12 @@
                     </div>
                 </div>
 
-                <!-- HASIL KESIMPULAN (Boleh Diedit & Kontras Tinggi) -->
                 <div class="p-10 bg-white border-4 border-blue-800 rounded-3xl shadow-2xl">
                     <h3 class="font-black text-base uppercase tracking-tighter text-blue-900 mb-6 flex items-center">
                         <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                         Kesimpulan Cadangan Penyelesaian Terbaik
                     </h3>
-                    <textarea id="aiStrategicSummary" class="text-lg leading-relaxed p-6 min-h-[300px] focus:ring-8 focus:ring-blue-100 !bg-white !text-black font-bold border-4 border-slate-300" placeholder="Hasil rumusan berdasarkan Standard 4 PdPc akan dipaparkan di sini. Anda boleh menambah atau mengurangkan ayat secara manual..."></textarea>
+                    <textarea id="aiStrategicSummary" class="text-lg leading-relaxed p-6 min-h-[300px] focus:ring-8 focus:ring-blue-100 !bg-white !text-black font-bold border-4 border-slate-300" placeholder="Hasil rumusan berdasarkan Standard 4 PdPc akan dipaparkan di sini..."></textarea>
                 </div>
             </section>
 
@@ -244,7 +240,7 @@
                 </div>
             </section>
 
-            <!-- FASA 4: LAMPIRAN GAMBAR (Max 6 Per Fasa) -->
+            <!-- FASA 4: LAMPIRAN GAMBAR -->
             <section class="page-break">
                 <h2 class="section-title">LAMPIRAN GAMBAR AKTIVITI</h2>
                 <div class="space-y-12">
@@ -311,11 +307,9 @@
         const apiKey = ""; 
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Setup AI Button
             const genBtn = document.getElementById('generateAI');
             if (genBtn) genBtn.addEventListener('click', generateAISystem);
             
-            // Setup Print Button
             const printBtn = document.getElementById('printBtn');
             if (printBtn) {
                 printBtn.addEventListener('click', (e) => {
@@ -325,11 +319,9 @@
                 });
             }
 
-            // Setup Add Row Button
             const addRowBtn = document.getElementById('addRowBtn');
             if (addRowBtn) addRowBtn.addEventListener('click', addTeacherRow);
 
-            // Setup Image Upload Triggers
             document.getElementById('upBtn1').addEventListener('click', () => document.getElementById('uploadFasa1').click());
             document.getElementById('upBtn2').addEventListener('click', () => document.getElementById('uploadFasa2').click());
             document.getElementById('upBtn3').addEventListener('click', () => document.getElementById('uploadFasa3').click());
@@ -367,12 +359,27 @@
             }
         }
 
+        async function fetchWithRetry(url, options, retries = 5, backoff = 1000) {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) return response;
+                    const errorBody = await response.text();
+                    console.error(`Attempt ${i+1} failed:`, errorBody);
+                } catch (err) {
+                    console.error(`Attempt ${i+1} Network Error:`, err);
+                }
+                if (i < retries - 1) await new Promise(r => setTimeout(r, backoff * Math.pow(2, i)));
+            }
+            throw new Error('Gagal menghubungi pelayan AI setelah beberapa percubaan.');
+        }
+
         async function callGemini(prompt, isStrategic = false) {
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             
             const systemPrompt = isStrategic 
                 ? "Bina satu 'Kesimpulan Cadangan Penyelesaian Terbaik' berdasarkan SKPMg2 Standard 4. PENTING: JANGAN gunakan ayat pengenalan atau penutup. Mulakan terus dengan ayat 'Kesimpulan Cadangan Penyelesaian: [isi kandungan]'. Jangan gunakan simbol **. Rumusan mestilah berdasarkan analisis 8 aspek PdPc dan maklum balas guru yang diberikan."
-                : "Rumuskan butiran untuk 8 kriteria SKPMg2 Standard 4 (Perancang, Pengawal, Pembimbing, Pendorong, Penilai, Pembelajar Aktif, Sumber ABM, Masa/Kelas) berdasarkan maklum balas guru. Jika tiada maklumat, tulis 'Tidak berkaitan'. Berikan JSON: { 'aspect1': 'ulasan', ... }.";
+                : "Rumuskan butiran untuk 8 kriteria SKPMg2 Standard 4 berdasarkan maklum balas guru. Berikan JSON sahaja tanpa huraian lain: { \"aspect1\": \"ulasan\", \"aspect2\": \"ulasan\", ... }.";
 
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
@@ -380,22 +387,21 @@
                 generationConfig: !isStrategic ? { responseMimeType: "application/json" } : {}
             };
 
-            const response = await fetch(url, {
+            const response = await fetchWithRetry(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error('API Error');
             const result = await response.json();
-            return result.candidates[0].content.parts[0].text;
+            return result.candidates?.[0]?.content?.parts?.[0]?.text || "";
         }
 
         async function generateAISystem() {
             const btn = document.getElementById('generateAI');
             const btnLoading = document.getElementById('btnLoading');
             const summaryBox = document.getElementById('aiStrategicSummary');
-            const pdpTitle = document.getElementById('pdpTitle').value;
+            const pdpTitle = document.getElementById('pdpTitle').value || "PdPc";
 
             const teacherInputs = Array.from(document.querySelectorAll('#teacherTable tbody tr'))
                 .map(row => {
@@ -403,10 +409,10 @@
                     const strength = row.querySelector('.t-strength').value;
                     const improve = row.querySelector('.t-improve').value;
                     return `Guru ${name}: [Kekuatan: ${strength}] | [Cadangan: ${improve}]`;
-                }).join('\n');
+                }).filter(input => input.length > 5).join('\n');
 
-            if (!teacherInputs.trim() || teacherInputs.length < 10) {
-                alert('Sila isi maklum balas kekuatan & penambahbaikan guru secukupnya.');
+            if (teacherInputs.length < 5) {
+                alert('Sila isi maklum balas kekuatan & penambahbaikan guru terlebih dahulu.');
                 return;
             }
 
@@ -414,30 +420,31 @@
             btnLoading.classList.remove('hidden');
 
             try {
-                // Step 1: Map to 8 PdPc Aspects
-                const aspectsJson = await callGemini(`Input pemerhatian guru untuk tajuk PdP ${pdpTitle}:\n${teacherInputs}`, false);
-                const data = JSON.parse(aspectsJson);
+                // Step 1: 8 Aspects
+                const aspectsRaw = await callGemini(`Input pemerhatian guru untuk tajuk PdP ${pdpTitle}:\n${teacherInputs}`, false);
                 
-                const keys = Object.keys(data);
+                // Clean markdown if AI ignores responseMimeType
+                const cleanJson = aspectsRaw.replace(/```json/g, "").replace(/```/g, "").trim();
+                const data = JSON.parse(cleanJson);
+                
                 for(let i=1; i<=8; i++) {
                     const el = document.getElementById(`crit-${i}`);
                     if(el) {
-                        el.value = data[`aspect${i}`] || data[`crit-${i}`] || data[keys[i-1]] || "Tidak berkaitan";
+                        el.value = data[`aspect${i}`] || "Tiada maklumat berkaitan dikesan.";
                     }
                 }
 
-                // Step 2: Final Conclusion based on PdPc Criteria
-                const strategicPrompt = `Tajuk: ${pdpTitle}\nMaklum Balas Guru:\n${teacherInputs}\nAnalisis 8 Aspek Standard 4:\n${Object.values(data).join('\n')}`;
+                // Step 2: Final Conclusion
+                const strategicPrompt = `Tajuk: ${pdpTitle}\nAnalisis 8 Aspek Standard 4:\n${Object.values(data).join('\n')}`;
                 const strategicResult = await callGemini(strategicPrompt, true);
-                summaryBox.value = strategicResult;
+                summaryBox.value = strategicResult.trim();
 
-                // Step 3: Default Share Values
                 document.getElementById('bestPractice').value = "Penerapan elemen Standard 4 PdPc secara berfokus berdasarkan kekuatan yang dikesan dalam rakaman video.";
                 document.getElementById('shareMedium').value = "WhatsApp Panitia, Taklimat Dalaman & Perkongsian Bank Data Sekolah.";
 
             } catch (err) {
                 console.error(err);
-                alert('Ralat sistem penjanaan. Sila semak input anda.');
+                alert('Ralat sistem penjanaan. Sila pastikan sambungan internet anda stabil atau cuba lagi sebentar.');
             } finally {
                 btn.disabled = false;
                 btnLoading.classList.add('hidden');
