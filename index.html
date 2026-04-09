@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SJK(C) CHUNG SAN - LAPORAN PLC KRITIKAN VIDEO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white !important; padding: 0 !important; margin: 0 !important; width: 100% !important; }
+            .container-box { 
+                box-shadow: none !important; 
+                border: 1px solid #000 !important; 
+                margin: 0 !important; 
+                width: 100% !important; 
+                max-width: 100% !important;
+            }
+            textarea, input { 
+                color: black !important; 
+                background: white !important; 
+                border: 1px solid #000 !important; 
+                -webkit-print-color-adjust: exact;
+            }
+            .image-grid-item { page-break-inside: avoid; }
+            .page-break { page-break-before: always; }
+        }
+        
+        /* High Contrast for Inputs - Black text on White background */
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #94a3b8;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #000000 !important; 
+            background-color: #ffffff !important;
+        }
+        
+        input:focus, textarea:focus {
+            border-color: #2563eb;
+            outline: none;
+            background-color: #f8fafc !important;
+        }
+
+        .section-title {
+            border-left: 6px solid #1e40af;
+            padding-left: 12px;
+            margin-bottom: 15px;
+            font-weight: 900;
+            color: #1e3a8a;
+            text-transform: uppercase;
+            font-size: 0.95rem;
+        }
+
+        /* Conclusion Box - Ultra High Contrast for Manual Editing */
+        #aiStrategicSummary {
+            border: 3px solid #000000 !important;
+            font-weight: 700;
+            line-height: 1.6;
+            color: #000000 !important;
+            background-color: #ffffff !important;
+            font-size: 1.1rem;
+        }
+
+        /* Image Display Grid */
+        .img-preview {
+            width: 100%;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+        }
+        .image-container {
+            display: grid;
+            grid-template-cols: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .lampiran-box {
+            background-color: #f1f5f9;
+            padding: 24px;
+            border-radius: 12px;
+            border: 2px dashed #94a3b8;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body class="bg-slate-200 py-10 px-4 font-sans text-black">
+
+    <div class="max-w-6xl mx-auto bg-white shadow-2xl rounded-3xl overflow-hidden container-box">
+        
+        <!-- HEADER -->
+        <div class="bg-blue-900 text-white p-10">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="text-center md:text-left">
+                    <h2 class="text-xl font-bold tracking-[0.2em] opacity-90">SJK(C) CHUNG SAN</h2>
+                    <h1 class="text-3xl font-black uppercase tracking-tight leading-tight">LAPORAN PLC KRITIKAN VIDEO</h1>
+                    <p class="text-blue-200 text-sm mt-1 font-semibold italic">Standard Kualiti Pendidikan: PdPc Standard 4</p>
+                </div>
+                <div class="w-full md:w-5/12">
+                    <div class="bg-blue-950 p-5 rounded-2xl border border-blue-700 shadow-xl">
+                        <label class="block text-[11px] font-black uppercase text-blue-300 mb-2 tracking-widest">Pautan Video (URL / Drive)</label>
+                        <input type="text" id="videoLink" placeholder="Tampal pautan rakaman..." class="text-sm shadow-inner !bg-white !text-black font-bold border-none focus:ring-4 focus:ring-blue-500 w-full px-4 py-3 rounded-xl">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-10 space-y-16">
+            
+            <!-- FASA 1: FOCUS -->
+            <section>
+                <h2 class="section-title">FASA 1: FOCUS (Input Data PdPc)</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-blue-50/50 p-8 rounded-2xl border border-blue-100 mb-8">
+                    <div class="space-y-5">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tarikh Bentuk Pasukan</label>
+                            <input type="date" class="font-bold">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Panitia</label>
+                            <input type="text" id="panitiaName" placeholder="Cth: Matematik / Bahasa Cina" class="font-bold">
+                        </div>
+                    </div>
+                    <div class="space-y-5">
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tajuk / Isu Fokus Kritikan</label>
+                            <input type="text" id="pdpTitle" placeholder="Cth: Penguasaan Teknik Penyoalan" class="font-bold">
+                        </div>
+                        <div class="space-y-1">
+                            <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Tarikh Rakaman / Video</label>
+                            <input type="date" class="font-bold">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-5">
+                    <h3 class="font-black text-slate-800 text-sm uppercase tracking-tight">Dapatan Kekuatan & Penambahbaikan</h3>
+                    <div class="overflow-hidden border border-slate-200 rounded-2xl shadow-sm">
+                        <table class="w-full text-xs" id="teacherTable">
+                            <thead>
+                                <tr class="bg-slate-800 text-white">
+                                    <th class="p-4 w-12 border-r border-slate-700 uppercase">Bil</th>
+                                    <th class="p-4 w-56 text-left border-r border-slate-700 uppercase">Nama Guru</th>
+                                    <th class="p-4 text-left border-r border-slate-700 uppercase tracking-widest">Kekuatan</th>
+                                    <th class="p-4 text-left uppercase tracking-widest">Penambahbaikan</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-200">
+                                <tr class="bg-white">
+                                    <td class="p-4 text-center border-r font-black text-slate-400">1</td>
+                                    <td class="p-4 border-r"><input type="text" class="t-name !border-none font-bold uppercase p-0 focus:ring-0 bg-white text-black"></td>
+                                    <td class="p-4 border-r"><textarea class="t-strength !border-none p-0 focus:ring-0 bg-white text-black" rows="3" placeholder="Nyatakan kekuatan amalan PdPc..."></textarea></td>
+                                    <td class="p-4"><textarea class="t-improve !border-none p-0 focus:ring-0 italic text-blue-800 bg-white" rows="3" placeholder="Nyatakan ruang penambahbaikan..."></textarea></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <button class="no-print mt-2 text-xs font-black text-blue-700 uppercase hover:text-blue-900 flex items-center" id="addRowBtn">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 6v6m0 0v6m0-6h6m-6 0H6" stroke-width="3"></path></svg>
+                        Tambah Baris Guru
+                    </button>
+                </div>
+            </section>
+
+            <!-- FASA 2: IMPROVE (8 ASPEK STANDARD 4) -->
+            <section id="fasaImprove">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <h2 class="section-title mb-0">FASA 2: IMPROVE (Analisis Standard 4 PdPc)</h2>
+                    <button id="generateAI" class="no-print bg-blue-700 hover:bg-blue-800 text-white px-10 py-4 rounded-2xl font-black transition-all shadow-xl transform hover:scale-105 flex items-center uppercase tracking-tighter">
+                        <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Jana Rumusan Kesimpulan
+                        <div id="btnLoading" class="hidden ml-3 w-5 h-5 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-10">
+                    <div class="space-y-4 text-black">
+                        <div class="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                            <label class="block text-[10px] font-black text-blue-900 uppercase mb-2 tracking-widest">1. Guru sebagai Perancang (4.1)</label>
+                            <textarea id="crit-1" class="critique-input text-sm font-bold" rows="2"></textarea>
+                        </div>
+                        <div class="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                            <label class="block text-[10px] font-black text-blue-900 uppercase mb-2 tracking-widest">2. Guru sebagai Pengawal (4.2)</label>
+                            <textarea id="crit-2" class="critique-input text-sm font-bold" rows="2"></textarea>
+                        </div>
+                        <div class="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                            <label class="block text-[10px] font-black text-blue-900 uppercase mb-2 tracking-widest">3. Guru sebagai Pembimbing (4.3)</label>
+                            <textarea id="crit-3" class="critique-input text-sm font-bold" rows="2"></textarea>
+                        </div>
+                        <div class="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                            <label class="block text-[10px] font-black text-blue-900 uppercase mb-2 tracking-widest">4. Guru sebagai Pendorong (4.4)</label>
+                            <textarea id="crit-4" class="critique-input text-sm font-bold" rows="2"></textarea>
+                        </div>
+                    </div>
+                    <div class="space-y-4 text-black">
+                        <div class="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                            <label class="block text-[10px] font-black text-blue-900 uppercase mb-2 tracking-widest">5. Guru sebagai Penilai (4.5)</label>
+                            <textarea id="crit-5" class="critique-input text-sm font-bold" rows="2"></textarea>
+                        </div>
+                        <div class="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                            <label class="block text-[10px] font-black text-blue-900 uppercase mb-2 tracking-widest">6. Murid sebagai Pembelajar Aktif (4.6)</label>
+                            <textarea id="crit-6" class="critique-input text-sm font-bold" rows="2"></textarea>
+                        </div>
+                        <div class="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                            <label class="block text-[10px] font-black text-blue-900 uppercase mb-2 tracking-widest">7. Penggunaan Sumber & ABM</label>
+                            <textarea id="crit-7" class="critique-input text-sm font-bold" rows="2"></textarea>
+                        </div>
+                        <div class="p-5 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                            <label class="block text-[10px] font-black text-blue-900 uppercase mb-2 tracking-widest">8. Pengurusan Masa & Kelas</label>
+                            <textarea id="crit-8" class="critique-input text-sm font-bold" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- HASIL KESIMPULAN (Boleh Diedit & Kontras Tinggi) -->
+                <div class="p-10 bg-white border-4 border-blue-800 rounded-3xl shadow-2xl">
+                    <h3 class="font-black text-base uppercase tracking-tighter text-blue-900 mb-6 flex items-center">
+                        <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                        Kesimpulan Cadangan Penyelesaian Terbaik
+                    </h3>
+                    <textarea id="aiStrategicSummary" class="text-lg leading-relaxed p-6 min-h-[300px] focus:ring-8 focus:ring-blue-100 !bg-white !text-black font-bold border-4 border-slate-300" placeholder="Hasil rumusan berdasarkan Standard 4 PdPc akan dipaparkan di sini. Anda boleh menambah atau mengurangkan ayat secara manual..."></textarea>
+                </div>
+            </section>
+
+            <!-- FASA 3: SHARE -->
+            <section>
+                <h2 class="section-title">FASA 3: SHARE (Penyebaran Amalan Terbaik)</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-black">
+                    <div class="p-8 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                        <label class="block text-[10px] font-black text-slate-800 mb-4 uppercase tracking-widest">Amalan Terbaik Disebar Luas</label>
+                        <textarea id="bestPractice" rows="4" placeholder="Nyatakan teknik PdPc yang paling berkesan..."></textarea>
+                    </div>
+                    <div class="p-8 bg-white border-2 border-slate-100 rounded-2xl shadow-sm">
+                        <label class="block text-[10px] font-black text-slate-800 mb-4 uppercase tracking-widest">Medium Perkongsian</label>
+                        <textarea id="shareMedium" rows="4" placeholder="Cth: WhatsApp Panitia, Google Drive, PLC Seterusnya..."></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FASA 4: LAMPIRAN GAMBAR (Max 6 Per Fasa) -->
+            <section class="page-break">
+                <h2 class="section-title">LAMPIRAN GAMBAR AKTIVITI</h2>
+                <div class="space-y-12">
+                    <div class="lampiran-box">
+                        <div class="flex justify-between items-center no-print mb-6">
+                            <h3 class="text-sm font-black text-blue-900 uppercase tracking-widest">Gambar Fasa 1 (Focus)</h3>
+                            <input type="file" id="uploadFasa1" multiple accept="image/*" class="hidden" onchange="handleImageUpload(event, 'previewFasa1')">
+                            <button id="upBtn1" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-blue-700 transition shadow-lg">MUAT NAIK GAMBAR</button>
+                        </div>
+                        <div id="previewFasa1" class="image-container"></div>
+                    </div>
+                    <div class="lampiran-box">
+                        <div class="flex justify-between items-center no-print mb-6">
+                            <h3 class="text-sm font-black text-blue-900 uppercase tracking-widest">Gambar Fasa 2 (Improve)</h3>
+                            <input type="file" id="uploadFasa2" multiple accept="image/*" class="hidden" onchange="handleImageUpload(event, 'previewFasa2')">
+                            <button id="upBtn2" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-blue-700 transition shadow-lg">MUAT NAIK GAMBAR</button>
+                        </div>
+                        <div id="previewFasa2" class="image-container"></div>
+                    </div>
+                    <div class="lampiran-box">
+                        <div class="flex justify-between items-center no-print mb-6">
+                            <h3 class="text-sm font-black text-blue-900 uppercase tracking-widest">Gambar Fasa 3 (Share)</h3>
+                            <input type="file" id="uploadFasa3" multiple accept="image/*" class="hidden" onchange="handleImageUpload(event, 'previewFasa3')">
+                            <button id="upBtn3" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-black hover:bg-blue-700 transition shadow-lg">MUAT NAIK GAMBAR</button>
+                        </div>
+                        <div id="previewFasa3" class="image-container"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SIGNATURE SECTION -->
+            <section class="grid grid-cols-1 md:grid-cols-2 gap-16 pt-16 border-t-2 border-slate-100">
+                <div class="space-y-6">
+                    <p class="text-[11px] font-black text-slate-400 uppercase italic">Disediakan oleh:</p>
+                    <div class="pt-10">
+                        <input type="text" placeholder="Masukkan Nama" class="border-none font-black text-base p-0 uppercase focus:ring-0 w-full bg-transparent border-b-2 border-slate-300 !text-black">
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2">Setiausaha Panitia / Pencatat</p>
+                    </div>
+                </div>
+                <div class="space-y-6 text-right">
+                    <p class="text-[11px] font-black text-slate-400 uppercase italic">Disahkan oleh:</p>
+                    <div class="pt-10">
+                        <input type="text" placeholder="Masukkan Nama" class="border-none text-right font-black text-base p-0 uppercase focus:ring-0 w-full bg-transparent border-b-2 border-slate-300 !text-black">
+                        <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-2">Ketua Panitia / Pengerusi PLC</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- FOOTER ACTIONS -->
+        <div class="bg-slate-50 p-10 flex flex-col md:flex-row justify-between items-center no-print border-t border-slate-100">
+            <div class="text-left mb-6 md:mb-0">
+                <p class="text-xs font-black text-slate-500 uppercase">SJK(C) CHUNG SAN</p>
+                <p id="printGuidance" class="text-[10px] text-blue-500 font-bold mt-1">Gunakan butang cetak atau tekan <b>Ctrl + P</b> untuk menjana PDF.</p>
+            </div>
+            <button id="printBtn" class="bg-slate-900 hover:bg-black text-white px-12 py-4 rounded-2xl font-black transition-all transform hover:scale-105 shadow-2xl flex items-center text-sm">
+                <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                SIMPAN / CETAK LAPORAN (PDF)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; 
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup AI Button
+            const genBtn = document.getElementById('generateAI');
+            if (genBtn) genBtn.addEventListener('click', generateAISystem);
+            
+            // Setup Print Button
+            const printBtn = document.getElementById('printBtn');
+            if (printBtn) {
+                printBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    window.focus();
+                    setTimeout(() => { window.print(); }, 150);
+                });
+            }
+
+            // Setup Add Row Button
+            const addRowBtn = document.getElementById('addRowBtn');
+            if (addRowBtn) addRowBtn.addEventListener('click', addTeacherRow);
+
+            // Setup Image Upload Triggers
+            document.getElementById('upBtn1').addEventListener('click', () => document.getElementById('uploadFasa1').click());
+            document.getElementById('upBtn2').addEventListener('click', () => document.getElementById('uploadFasa2').click());
+            document.getElementById('upBtn3').addEventListener('click', () => document.getElementById('uploadFasa3').click());
+        });
+
+        function addTeacherRow() {
+            const tbody = document.querySelector('#teacherTable tbody');
+            const rowCount = tbody.rows.length + 1;
+            const newRow = tbody.insertRow();
+            newRow.className = "bg-white";
+            newRow.innerHTML = `
+                <td class="p-4 text-center border-r font-black text-slate-400">${rowCount}</td>
+                <td class="p-4 border-r"><input type="text" class="t-name !border-none font-bold uppercase p-0 focus:ring-0 bg-white text-black"></td>
+                <td class="p-4 border-r"><textarea class="t-strength !border-none p-0 focus:ring-0 bg-white text-black" rows="3"></textarea></td>
+                <td class="p-4"><textarea class="t-improve !border-none p-0 focus:ring-0 italic text-blue-800 bg-white" rows="3"></textarea></td>
+            `;
+        }
+
+        function handleImageUpload(event, previewId) {
+            const files = event.target.files;
+            const previewContainer = document.getElementById(previewId);
+            const count = Math.min(files.length, 6);
+            for (let i = 0; i < count; i++) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'image-grid-item';
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'img-preview';
+                    imgDiv.appendChild(img);
+                    previewContainer.appendChild(imgDiv);
+                }
+                reader.readAsDataURL(files[i]);
+            }
+        }
+
+        async function callGemini(prompt, isStrategic = false) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const systemPrompt = isStrategic 
+                ? "Bina satu 'Kesimpulan Cadangan Penyelesaian Terbaik' berdasarkan SKPMg2 Standard 4. PENTING: JANGAN gunakan ayat pengenalan atau penutup. Mulakan terus dengan ayat 'Kesimpulan Cadangan Penyelesaian: [isi kandungan]'. Jangan gunakan simbol **. Rumusan mestilah berdasarkan analisis 8 aspek PdPc dan maklum balas guru yang diberikan."
+                : "Rumuskan butiran untuk 8 kriteria SKPMg2 Standard 4 (Perancang, Pengawal, Pembimbing, Pendorong, Penilai, Pembelajar Aktif, Sumber ABM, Masa/Kelas) berdasarkan maklum balas guru. Jika tiada maklumat, tulis 'Tidak berkaitan'. Berikan JSON: { 'aspect1': 'ulasan', ... }.";
+
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+                generationConfig: !isStrategic ? { responseMimeType: "application/json" } : {}
+            };
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error('API Error');
+            const result = await response.json();
+            return result.candidates[0].content.parts[0].text;
+        }
+
+        async function generateAISystem() {
+            const btn = document.getElementById('generateAI');
+            const btnLoading = document.getElementById('btnLoading');
+            const summaryBox = document.getElementById('aiStrategicSummary');
+            const pdpTitle = document.getElementById('pdpTitle').value;
+
+            const teacherInputs = Array.from(document.querySelectorAll('#teacherTable tbody tr'))
+                .map(row => {
+                    const name = row.querySelector('.t-name').value;
+                    const strength = row.querySelector('.t-strength').value;
+                    const improve = row.querySelector('.t-improve').value;
+                    return `Guru ${name}: [Kekuatan: ${strength}] | [Cadangan: ${improve}]`;
+                }).join('\n');
+
+            if (!teacherInputs.trim() || teacherInputs.length < 10) {
+                alert('Sila isi maklum balas kekuatan & penambahbaikan guru secukupnya.');
+                return;
+            }
+
+            btn.disabled = true;
+            btnLoading.classList.remove('hidden');
+
+            try {
+                // Step 1: Map to 8 PdPc Aspects
+                const aspectsJson = await callGemini(`Input pemerhatian guru untuk tajuk PdP ${pdpTitle}:\n${teacherInputs}`, false);
+                const data = JSON.parse(aspectsJson);
+                
+                const keys = Object.keys(data);
+                for(let i=1; i<=8; i++) {
+                    const el = document.getElementById(`crit-${i}`);
+                    if(el) {
+                        el.value = data[`aspect${i}`] || data[`crit-${i}`] || data[keys[i-1]] || "Tidak berkaitan";
+                    }
+                }
+
+                // Step 2: Final Conclusion based on PdPc Criteria
+                const strategicPrompt = `Tajuk: ${pdpTitle}\nMaklum Balas Guru:\n${teacherInputs}\nAnalisis 8 Aspek Standard 4:\n${Object.values(data).join('\n')}`;
+                const strategicResult = await callGemini(strategicPrompt, true);
+                summaryBox.value = strategicResult;
+
+                // Step 3: Default Share Values
+                document.getElementById('bestPractice').value = "Penerapan elemen Standard 4 PdPc secara berfokus berdasarkan kekuatan yang dikesan dalam rakaman video.";
+                document.getElementById('shareMedium').value = "WhatsApp Panitia, Taklimat Dalaman & Perkongsian Bank Data Sekolah.";
+
+            } catch (err) {
+                console.error(err);
+                alert('Ralat sistem penjanaan. Sila semak input anda.');
+            } finally {
+                btn.disabled = false;
+                btnLoading.classList.add('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
