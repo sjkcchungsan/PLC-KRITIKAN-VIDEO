@@ -364,10 +364,10 @@
                 try {
                     const response = await fetch(url, options);
                     if (response.ok) return response;
-                    const errorBody = await response.text();
-                    console.error(`Attempt ${i+1} failed:`, errorBody);
+                    const errorText = await response.text();
+                    console.error(`Percubaan ${i+1} gagal:`, errorText);
                 } catch (err) {
-                    console.error(`Attempt ${i+1} Network Error:`, err);
+                    console.error(`Ralat Rangkaian Percubaan ${i+1}:`, err);
                 }
                 if (i < retries - 1) await new Promise(r => setTimeout(r, backoff * Math.pow(2, i)));
             }
@@ -378,8 +378,8 @@
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             
             const systemPrompt = isStrategic 
-                ? "Bina satu 'Kesimpulan Cadangan Penyelesaian Terbaik' berdasarkan SKPMg2 Standard 4. PENTING: JANGAN gunakan ayat pengenalan atau penutup. Mulakan terus dengan ayat 'Kesimpulan Cadangan Penyelesaian: [isi kandungan]'. Jangan gunakan simbol **. Rumusan mestilah berdasarkan analisis 8 aspek PdPc dan maklum balas guru yang diberikan."
-                : "Rumuskan butiran untuk 8 kriteria SKPMg2 Standard 4 berdasarkan maklum balas guru. Berikan JSON sahaja tanpa huraian lain: { \"aspect1\": \"ulasan\", \"aspect2\": \"ulasan\", ... }.";
+                ? "Bina satu 'Kesimpulan Cadangan Penyelesaian Terbaik' berdasarkan SKPMg2 Standard 4. PENTING: JANGAN gunakan ayat pengenalan atau penutup. Mulakan terus dengan ayat 'Kesimpulan Cadangan Penyelesaian: [isi kandungan]'. JANGAN gunakan sebarang format markdown seperti simbol **. Pastikan bahasa profesional."
+                : "Rumuskan butiran untuk 8 kriteria SKPMg2 Standard 4 berdasarkan maklum balas guru. Berikan maklum balas dalam format JSON SAHAJA tanpa sebarang teks penjelasan tambahan. Format: { \"aspect1\": \"ulasan\", \"aspect2\": \"ulasan\", ... }.";
 
             const payload = {
                 contents: [{ parts: [{ text: prompt }] }],
@@ -394,14 +394,16 @@
             });
 
             const result = await response.json();
-            return result.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) throw new Error("Tiada respons daripada AI.");
+            return text;
         }
 
         async function generateAISystem() {
             const btn = document.getElementById('generateAI');
             const btnLoading = document.getElementById('btnLoading');
             const summaryBox = document.getElementById('aiStrategicSummary');
-            const pdpTitle = document.getElementById('pdpTitle').value || "PdPc";
+            const pdpTitle = document.getElementById('pdpTitle').value || "Sesi PdPc";
 
             const teacherInputs = Array.from(document.querySelectorAll('#teacherTable tbody tr'))
                 .map(row => {
@@ -409,10 +411,10 @@
                     const strength = row.querySelector('.t-strength').value;
                     const improve = row.querySelector('.t-improve').value;
                     return `Guru ${name}: [Kekuatan: ${strength}] | [Cadangan: ${improve}]`;
-                }).filter(input => input.length > 5).join('\n');
+                }).filter(input => input.length > 10).join('\n');
 
-            if (teacherInputs.length < 5) {
-                alert('Sila isi maklum balas kekuatan & penambahbaikan guru terlebih dahulu.');
+            if (teacherInputs.length < 10) {
+                alert('Sila isi maklum balas kekuatan & penambahbaikan guru yang mencukupi untuk dianalisis.');
                 return;
             }
 
@@ -420,31 +422,36 @@
             btnLoading.classList.remove('hidden');
 
             try {
-                // Step 1: 8 Aspects
-                const aspectsRaw = await callGemini(`Input pemerhatian guru untuk tajuk PdP ${pdpTitle}:\n${teacherInputs}`, false);
+                // Fasa 2: 8 Aspek Standard 4
+                const aspectsRaw = await callGemini(`Analisis input pemerhatian guru untuk PdPc bertajuk ${pdpTitle}:\n${teacherInputs}`, false);
                 
-                // Clean markdown if AI ignores responseMimeType
-                const cleanJson = aspectsRaw.replace(/```json/g, "").replace(/```/g, "").trim();
+                // Ekstrak JSON secara selamat (mencari kurungan awal dan akhir)
+                const startIdx = aspectsRaw.indexOf('{');
+                const endIdx = aspectsRaw.lastIndexOf('}');
+                if (startIdx === -1 || endIdx === -1) throw new Error("Format JSON tidak sah.");
+                
+                const cleanJson = aspectsRaw.substring(startIdx, endIdx + 1);
                 const data = JSON.parse(cleanJson);
                 
                 for(let i=1; i<=8; i++) {
                     const el = document.getElementById(`crit-${i}`);
                     if(el) {
-                        el.value = data[`aspect${i}`] || "Tiada maklumat berkaitan dikesan.";
+                        el.value = data[`aspect${i}`] || data[`aspect_${i}`] || "Maklumat tidak mencukupi untuk dirumuskan.";
                     }
                 }
 
-                // Step 2: Final Conclusion
-                const strategicPrompt = `Tajuk: ${pdpTitle}\nAnalisis 8 Aspek Standard 4:\n${Object.values(data).join('\n')}`;
+                // Langkah 2: Jana Kesimpulan Keseluruhan
+                const strategicPrompt = `Berdasarkan analisis 8 aspek Standard 4 berikut:\n${Object.values(data).join('\n')}\nSila berikan rumusan kesimpulan strategi terbaik untuk tajuk ${pdpTitle}.`;
                 const strategicResult = await callGemini(strategicPrompt, true);
                 summaryBox.value = strategicResult.trim();
 
+                // Fasa 3: Isi cadangan lalai
                 document.getElementById('bestPractice').value = "Penerapan elemen Standard 4 PdPc secara berfokus berdasarkan kekuatan yang dikesan dalam rakaman video.";
                 document.getElementById('shareMedium').value = "WhatsApp Panitia, Taklimat Dalaman & Perkongsian Bank Data Sekolah.";
 
             } catch (err) {
-                console.error(err);
-                alert('Ralat sistem penjanaan. Sila pastikan sambungan internet anda stabil atau cuba lagi sebentar.');
+                console.error("Ralat Penjanaan:", err);
+                alert('Ralat sistem penjanaan: ' + err.message + '\nSila pastikan input guru diisi dengan lengkap dan cuba lagi.');
             } finally {
                 btn.disabled = false;
                 btnLoading.classList.add('hidden');
